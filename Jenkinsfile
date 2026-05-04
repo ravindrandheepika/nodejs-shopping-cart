@@ -40,14 +40,16 @@ pipeline {
                     def scannerHome = tool 'sonar-scanner'
 
                     withSonarQubeEnv('SonarQube') {
-                        sh """
-                        ${scannerHome}/bin/sonar-scanner \
-                        -Dsonar.projectKey=nodejs-shopping-cart-dheepu \
-                        -Dsonar.projectName=nodejs-shopping-cart \
-                        -Dsonar.sources=. \
-                        -Dsonar.exclusions=node_modules/**,helm/**,data/** \
-                        -Dsonar.token=$SONAR_AUTH_TOKEN
-                        """
+                        withCredentials([string(credentialsId: 'SONAR_AUTH_TOKEN', variable: 'SONAR_AUTH_TOKEN')]) {
+                            sh """
+                            ${scannerHome}/bin/sonar-scanner \
+                            -Dsonar.projectKey=nodejs-shopping-cart-dheepu \
+                            -Dsonar.projectName=nodejs-shopping-cart \
+                            -Dsonar.sources=. \
+                            -Dsonar.exclusions=node_modules/**,helm/**,data/** \
+                            -Dsonar.token=$SONAR_AUTH_TOKEN
+                            """
+                        }
                     }
                 }
             }
@@ -89,7 +91,7 @@ pipeline {
             steps {
                 withCredentials([
                     usernamePassword(credentialsId: 'azure-sp', usernameVariable: 'AZURE_APP_ID', passwordVariable: 'AZURE_PASSWORD'),
-                    string(credentialsId: 'azure-tenant', variable: 'AZURE_TENANT')
+                    string(credentialsId: 'azure-tenant-id', variable: 'AZURE_TENANT')
                 ]) {
                     sh '''
                     az login --service-principal -u $AZURE_APP_ID -p $AZURE_PASSWORD --tenant $AZURE_TENANT
