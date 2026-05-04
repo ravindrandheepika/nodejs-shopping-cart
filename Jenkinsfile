@@ -6,11 +6,11 @@ pipeline {
     }
 
     environment {
-        ACR_NAME = 'luckyregistry11'
-        ACR_LOGIN_SERVER = 'luckyregistry11.azurecr.io'
-        IMAGE_NAME = 'nodejs-shpping-cart'
-        RESOURCE_GROUP = 'lucky'
-        AKS_CLUSTER = 'lucky-aks-cluster11'
+        ACR_NAME = 'dheepuacr2026'
+        ACR_LOGIN_SERVER = 'dheepuacr2026.azurecr.io'
+        IMAGE_NAME = 'nodejs-shopping-cart'
+        RESOURCE_GROUP = 'aks-rg'
+        AKS_CLUSTER = 'dheepu-aks-cluster2026'
         HELM_RELEASE = 'nodejs-shopping-cart'
         HELM_CHART_PATH = 'helm/nodejs-shopping-cart'
         IMAGE_TAG = "${BUILD_NUMBER}"
@@ -20,7 +20,7 @@ pipeline {
 
         stage('Checkout Code') {
             steps {
-                git branch: 'master', url: 'https://github.com/luckyncpl/nodejs-shopping-cart'
+                git branch: 'main', url: 'https://github.com/ravindrandheepika/nodejs-shopping-cart'
             }
         }
 
@@ -42,7 +42,7 @@ pipeline {
                     withSonarQubeEnv('SonarQube') {
                         sh """
                         ${scannerHome}/bin/sonar-scanner \
-                        -Dsonar.projectKey=nodejs-shopping-cart_12345 \
+                        -Dsonar.projectKey=nodejs-shopping-cart-dheepu \
                         -Dsonar.projectName=nodejs-shopping-cart \
                         -Dsonar.sources=. \
                         -Dsonar.exclusions=node_modules/**,helm/**,data/** \
@@ -129,7 +129,7 @@ pipeline {
         stage('Verify Deployment') {
             steps {
                 sh '''
-                kubectl get pods
+                kubectl get pods -o wide
                 kubectl get svc
                 kubectl get hpa
                 '''
