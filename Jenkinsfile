@@ -60,7 +60,6 @@ pipeline {
                 withCredentials([string(credentialsId: 'SNYK_TOKEN', variable: 'SNYK_TOKEN')]) {
                     sh '''
                     npm install -g snyk
-                    snyk --version
                     snyk auth $SNYK_TOKEN
                     snyk test --severity-threshold=high || true
                     snyk monitor || true
@@ -134,6 +133,38 @@ pipeline {
                 kubectl get pods -o wide
                 kubectl get svc
                 kubectl get hpa
+                '''
+            }
+        }
+
+        stage('Check LoadBalancer Status') {
+            steps {
+                sh '''
+                echo "Checking LoadBalancer status..."
+                kubectl get svc nodejs-shopping-cart-service -o wide
+                echo "Describing service events..."
+                kubectl describe svc nodejs-shopping-cart-service | grep -A5 Events || true
+                '''
+            }
+        }
+
+        stage('Wait for External IP') {
+            steps {
+                sh '''
+                echo "Waiting for LoadBalancer EXTERNAL-IP..."
+                for i in {1..10}; do
+                  IP=$(kubectl get svc nodejs-shopping-cart-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+                  if [ -n "$IP" ]; then
+                    echo "External IP assigned: $IP"
+                    exit 0
+                  else
+                    echo "Still pending... retrying in 30 seconds"
+                    sleep 30
+                  fi
+                done
+
+                echo "ERROR: LoadBalancer did not receive an external IP in time."
+                exit 1
                 '''
             }
         }
